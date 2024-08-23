@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Container, Drawer, List, ListItem, ListItemText, TextField, Typography } from '@mui/material';
+import { Box, Button, Container, Drawer, List, ListItem, ListItemText, TextField, Typography, CircularProgress } from '@mui/material';
 import { styled } from '@mui/system';
 import AddIcon from '@mui/icons-material/Add';
 import { backend } from 'declarations/backend';
@@ -39,17 +39,21 @@ const App = () => {
   const [title, setTitle] = useState('');
   const [blocks, setBlocks] = useState([{ type_: 'text', content: '' }]);
   const [drawerOpen, setDrawerOpen] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchPages();
   }, []);
 
   const fetchPages = async () => {
+    setLoading(true);
     try {
       const result = await backend.getPages();
       setPages(result);
     } catch (error) {
       console.error('Error fetching pages:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -66,6 +70,7 @@ const App = () => {
   };
 
   const loadPage = async (id) => {
+    setLoading(true);
     try {
       const page = await backend.getPage(id);
       if (page) {
@@ -75,16 +80,21 @@ const App = () => {
       }
     } catch (error) {
       console.error('Error loading page:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const savePage = async () => {
     if (currentPage === null) return;
+    setLoading(true);
     try {
       await backend.updatePage(currentPage, title, blocks);
       await fetchPages();
     } catch (error) {
       console.error('Error saving page:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -119,35 +129,45 @@ const App = () => {
           </Button>
         </DrawerHeader>
         <List>
-          {pages.map((page) => (
-            <ListItem button key={page.id} onClick={() => loadPage(page.id)}>
-              <ListItemText primary={page.title} />
-            </ListItem>
-          ))}
+          {loading ? (
+            <CircularProgress />
+          ) : (
+            (pages ?? []).map((page) => (
+              <ListItem button key={page.id} onClick={() => loadPage(page.id)}>
+                <ListItemText primary={page.title} />
+              </ListItem>
+            ))
+          )}
         </List>
       </Drawer>
       <Main open={drawerOpen}>
         <Container>
-          <TextField
-            fullWidth
-            variant="standard"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            sx={{ mb: 2, fontSize: '2rem', fontWeight: 'bold' }}
-          />
-          {blocks.map((block, index) => (
-            <TextField
-              key={index}
-              fullWidth
-              multiline
-              variant="standard"
-              value={block.content}
-              onChange={(e) => handleBlockChange(index, e.target.value)}
-              sx={{ mb: 1 }}
-            />
-          ))}
-          <Button onClick={addBlock}>Add Block</Button>
-          <Button onClick={savePage}>Save</Button>
+          {loading ? (
+            <CircularProgress />
+          ) : (
+            <>
+              <TextField
+                fullWidth
+                variant="standard"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                sx={{ mb: 2, fontSize: '2rem', fontWeight: 'bold' }}
+              />
+              {blocks.map((block, index) => (
+                <TextField
+                  key={index}
+                  fullWidth
+                  multiline
+                  variant="standard"
+                  value={block.content}
+                  onChange={(e) => handleBlockChange(index, e.target.value)}
+                  sx={{ mb: 1 }}
+                />
+              ))}
+              <Button onClick={addBlock}>Add Block</Button>
+              <Button onClick={savePage}>Save</Button>
+            </>
+          )}
         </Container>
       </Main>
     </Box>
