@@ -58,6 +58,7 @@ const App = () => {
   };
 
   const createPage = async () => {
+    setLoading(true);
     try {
       const newPageId = await backend.createPage('New Page');
       await fetchPages();
@@ -66,6 +67,8 @@ const App = () => {
       setBlocks([{ type_: 'text', content: '' }]);
     } catch (error) {
       console.error('Error creating page:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -153,7 +156,7 @@ const App = () => {
                 onChange={(e) => setTitle(e.target.value)}
                 sx={{ mb: 2, fontSize: '2rem', fontWeight: 'bold' }}
               />
-              {blocks.map((block, index) => (
+              {(blocks ?? []).map((block, index) => (
                 <TextField
                   key={index}
                   fullWidth
