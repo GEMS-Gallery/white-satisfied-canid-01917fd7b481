@@ -49,9 +49,10 @@ const App = () => {
     setLoading(true);
     try {
       const result = await backend.getPages();
-      setPages(result);
+      setPages(result || []);
     } catch (error) {
       console.error('Error fetching pages:', error);
+      setPages([]);
     } finally {
       setLoading(false);
     }
@@ -79,7 +80,7 @@ const App = () => {
       if (page) {
         setCurrentPage(id);
         setTitle(page.title);
-        setBlocks(page.blocks);
+        setBlocks(page.blocks || []);
       }
     } catch (error) {
       console.error('Error loading page:', error);
@@ -135,7 +136,7 @@ const App = () => {
           {loading ? (
             <CircularProgress />
           ) : (
-            (pages ?? []).map((page) => (
+            Array.isArray(pages) && pages.map((page) => (
               <ListItem button key={page.id} onClick={() => loadPage(page.id)}>
                 <ListItemText primary={page.title} />
               </ListItem>
@@ -156,7 +157,7 @@ const App = () => {
                 onChange={(e) => setTitle(e.target.value)}
                 sx={{ mb: 2, fontSize: '2rem', fontWeight: 'bold' }}
               />
-              {(blocks ?? []).map((block, index) => (
+              {Array.isArray(blocks) && blocks.map((block, index) => (
                 <TextField
                   key={index}
                   fullWidth
@@ -164,6 +165,12 @@ const App = () => {
                   variant="standard"
                   value={block.content}
                   onChange={(e) => handleBlockChange(index, e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleBlockChange(index, block.content + '\n');
+                    }
+                  }}
                   sx={{ mb: 1 }}
                 />
               ))}
