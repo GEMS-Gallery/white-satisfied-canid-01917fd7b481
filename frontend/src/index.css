@@ -21,6 +21,13 @@ code {
   padding: 10px;
   white-space: pre-wrap;
   word-wrap: break-word;
+  min-height: 100px;
+}
+
+.code-block:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
 }
 
 .code-block .keyword { color: #0000ff; }

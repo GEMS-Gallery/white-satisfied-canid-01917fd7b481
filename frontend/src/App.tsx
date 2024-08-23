@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Box, Button, Container, Drawer, List, ListItem, ListItemText, TextField, Typography, CircularProgress, Select, MenuItem } from '@mui/material';
 import { styled } from '@mui/system';
 import AddIcon from '@mui/icons-material/Add';
@@ -58,45 +58,56 @@ const highlightSyntax = (code, language) => {
 
   if (patterns[language]) {
     Object.entries(patterns[language]).forEach(([className, regex]) => {
-      highlighted = highlighted.replace(regex, `<span class="${className}">$1</span>`);
+      highlighted = highlighted.replace(regex, (match) => `<span class="${className}">${match}</span>`);
     });
   }
 
   return highlighted;
 };
 
-const CodeBlock = ({ content, language, onChange }) => (
-  <Box sx={{ mb: 1 }}>
-    <Select
-      value={language || ''}
-      onChange={(e) => onChange(content, e.target.value)}
-      sx={{ mb: 1 }}
-    >
-      <MenuItem value="">Select language</MenuItem>
-      <MenuItem value="html">HTML</MenuItem>
-      <MenuItem value="css">CSS</MenuItem>
-      <MenuItem value="javascript">JavaScript</MenuItem>
-    </Select>
-    <TextField
-      fullWidth
-      multiline
-      variant="outlined"
-      value={content}
-      onChange={(e) => onChange(e.target.value, language)}
-      InputProps={{
-        style: {
-          fontFamily: 'monospace',
-          whiteSpace: 'pre-wrap',
-        },
-      }}
-    />
-    <Box
-      className="code-block"
-      dangerouslySetInnerHTML={{ __html: highlightSyntax(content, language) }}
-      sx={{ mt: 1 }}
-    />
-  </Box>
-);
+const CodeBlock = ({ content, language, onChange }) => {
+  const codeRef = useRef(null);
+
+  const handleInput = () => {
+    if (codeRef.current) {
+      const newContent = codeRef.current.innerText;
+      onChange(newContent, language);
+    }
+  };
+
+  const updateHighlight = () => {
+    if (codeRef.current) {
+      const highlightedContent = highlightSyntax(content, language);
+      codeRef.current.innerHTML = highlightedContent;
+    }
+  };
+
+  useEffect(() => {
+    updateHighlight();
+  }, [content, language]);
+
+  return (
+    <Box sx={{ mb: 1 }}>
+      <Select
+        value={language || ''}
+        onChange={(e) => onChange(content, e.target.value)}
+        sx={{ mb: 1 }}
+      >
+        <MenuItem value="">Select language</MenuItem>
+        <MenuItem value="html">HTML</MenuItem>
+        <MenuItem value="css">CSS</MenuItem>
+        <MenuItem value="javascript">JavaScript</MenuItem>
+      </Select>
+      <div
+        ref={codeRef}
+        className="code-block"
+        contentEditable
+        onInput={handleInput}
+        dangerouslySetInnerHTML={{ __html: highlightSyntax(content, language) }}
+      />
+    </Box>
+  );
+};
 
 const App = () => {
   const [pages, setPages] = useState([]);
