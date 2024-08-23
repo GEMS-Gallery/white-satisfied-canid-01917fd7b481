@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Button, Container, Drawer, List, ListItem, ListItemText, TextField, Typography, CircularProgress } from '@mui/material';
 import { styled } from '@mui/system';
 import AddIcon from '@mui/icons-material/Add';
+import CodeIcon from '@mui/icons-material/Code';
 import { backend } from 'declarations/backend';
 
 const drawerWidth = 240;
@@ -32,6 +33,23 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   ...theme.mixins.toolbar,
   justifyContent: 'flex-end',
 }));
+
+const CodeBlock = ({ content, onChange }) => (
+  <TextField
+    fullWidth
+    multiline
+    variant="outlined"
+    value={content}
+    onChange={(e) => onChange(e.target.value)}
+    InputProps={{
+      style: {
+        fontFamily: 'monospace',
+        whiteSpace: 'pre-wrap',
+      },
+    }}
+    sx={{ mb: 1 }}
+  />
+);
 
 const App = () => {
   const [pages, setPages] = useState([]);
@@ -108,8 +126,8 @@ const App = () => {
     setBlocks(newBlocks);
   };
 
-  const addBlock = () => {
-    setBlocks([...blocks, { type_: 'text', content: '' }]);
+  const addBlock = (type_ = 'text') => {
+    setBlocks([...blocks, { type_, content: '' }]);
   };
 
   return (
@@ -158,23 +176,32 @@ const App = () => {
                 sx={{ mb: 2, fontSize: '2rem', fontWeight: 'bold' }}
               />
               {Array.isArray(blocks) && blocks.map((block, index) => (
-                <TextField
-                  key={index}
-                  fullWidth
-                  multiline
-                  variant="standard"
-                  value={block.content}
-                  onChange={(e) => handleBlockChange(index, e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleBlockChange(index, block.content + '\n');
-                    }
-                  }}
-                  sx={{ mb: 1 }}
-                />
+                block.type_ === 'code' ? (
+                  <CodeBlock
+                    key={index}
+                    content={block.content}
+                    onChange={(content) => handleBlockChange(index, content)}
+                  />
+                ) : (
+                  <TextField
+                    key={index}
+                    fullWidth
+                    multiline
+                    variant="standard"
+                    value={block.content}
+                    onChange={(e) => handleBlockChange(index, e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleBlockChange(index, block.content + '\n');
+                      }
+                    }}
+                    sx={{ mb: 1 }}
+                  />
+                )
               ))}
-              <Button onClick={addBlock}>Add Block</Button>
+              <Button onClick={() => addBlock('text')}>Add Text Block</Button>
+              <Button onClick={() => addBlock('code')} startIcon={<CodeIcon />}>Add Code Block</Button>
               <Button onClick={savePage}>Save</Button>
             </>
           )}
