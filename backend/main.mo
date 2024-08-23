@@ -15,6 +15,7 @@ actor {
   type Block = {
     type_: Text;
     content: Text;
+    language: ?Text;
   };
   type Page = {
     id: PageId;
@@ -35,13 +36,13 @@ actor {
   func serializePage(page : Page) : {
     id : PageId;
     title : Text;
-    blocks : [{type_: Text; content: Text}];
+    blocks : [{type_: Text; content: Text; language: ?Text}];
   } {
     {
       id = page.id;
       title = page.title;
-      blocks = Array.map(page.blocks, func(block : Block) : {type_: Text; content: Text} {
-        {type_ = block.type_; content = block.content}
+      blocks = Array.map(page.blocks, func(block : Block) : {type_: Text; content: Text; language: ?Text} {
+        {type_ = block.type_; content = block.content; language = block.language}
       });
     }
   };
@@ -53,7 +54,7 @@ actor {
     let newPage : Page = {
       id = id;
       title = title;
-      blocks = [{type_ = "text"; content = ""}];
+      blocks = [{type_ = "text"; content = ""; language = null}];
     };
     pages.put(id, newPage);
     id
@@ -63,12 +64,12 @@ actor {
   public query func getPages() : async [{
     id : PageId;
     title : Text;
-    blocks : [{type_: Text; content: Text}];
+    blocks : [{type_: Text; content: Text; language: ?Text}];
   }] {
     Array.map<(PageId, Page), {
       id : PageId;
       title : Text;
-      blocks : [{type_: Text; content: Text}];
+      blocks : [{type_: Text; content: Text; language: ?Text}];
     }>(Array.sort(Iter.toArray(pages.entries()), func(a : (PageId, Page), b : (PageId, Page)) : Order.Order { 
       Nat.compare(a.0, b.0)
     }), func((_, page)) {
@@ -80,13 +81,13 @@ actor {
   public query func getPage(id : PageId) : async ?{
     id : PageId;
     title : Text;
-    blocks : [{type_: Text; content: Text}];
+    blocks : [{type_: Text; content: Text; language: ?Text}];
   } {
     Option.map(pages.get(id), serializePage)
   };
 
   // Update a page
-  public func updatePage(id : PageId, title : Text, blocks : [{type_: Text; content: Text}]) : async Result.Result<(), Text> {
+  public func updatePage(id : PageId, title : Text, blocks : [{type_: Text; content: Text; language: ?Text}]) : async Result.Result<(), Text> {
     switch (pages.get(id)) {
       case (null) {
         #err("Page not found")
@@ -95,8 +96,8 @@ actor {
         let updatedPage : Page = {
           id = id;
           title = title;
-          blocks = Array.map(blocks, func(b : {type_: Text; content: Text}) : Block {
-            {type_ = b.type_; content = b.content}
+          blocks = Array.map(blocks, func(b : {type_: Text; content: Text; language: ?Text}) : Block {
+            {type_ = b.type_; content = b.content; language = b.language}
           });
         };
         pages.put(id, updatedPage);

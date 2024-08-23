@@ -12,6 +12,7 @@ service : {
      record {
        blocks: vec record {
                      content: text;
+                     language: opt text;
                      "type": text;
                    };
        id: PageId;
@@ -22,13 +23,16 @@ service : {
      record {
        blocks: vec record {
                      content: text;
+                     language: opt text;
                      "type": text;
                    };
        id: PageId;
        title: text;
      }) query;
-  updatePage: (PageId, text, vec record {
-                                   content: text;
-                                   "type": text;
-                                 }) -> (Result);
+  updatePage: (PageId, text,
+   vec record {
+         content: text;
+         language: opt text;
+         "type": text;
+       }) -> (Result);
 }

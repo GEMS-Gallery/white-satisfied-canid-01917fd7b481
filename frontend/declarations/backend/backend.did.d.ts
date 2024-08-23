@@ -14,7 +14,9 @@ export interface _SERVICE {
       {
         'id' : PageId,
         'title' : string,
-        'blocks' : Array<{ 'content' : string, 'type' : string }>,
+        'blocks' : Array<
+          { 'content' : string, 'type' : string, 'language' : [] | [string] }
+        >,
       }
     ]
   >,
@@ -24,12 +26,20 @@ export interface _SERVICE {
       {
         'id' : PageId,
         'title' : string,
-        'blocks' : Array<{ 'content' : string, 'type' : string }>,
+        'blocks' : Array<
+          { 'content' : string, 'type' : string, 'language' : [] | [string] }
+        >,
       }
     >
   >,
   'updatePage' : ActorMethod<
-    [PageId, string, Array<{ 'content' : string, 'type' : string }>],
+    [
+      PageId,
+      string,
+      Array<
+        { 'content' : string, 'type' : string, 'language' : [] | [string] }
+      >,
+    ],
     Result
   >,
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Container, Drawer, List, ListItem, ListItemText, TextField, Typography, CircularProgress } from '@mui/material';
+import { Box, Button, Container, Drawer, List, ListItem, ListItemText, TextField, Typography, CircularProgress, Select, MenuItem } from '@mui/material';
 import { styled } from '@mui/system';
 import AddIcon from '@mui/icons-material/Add';
 import CodeIcon from '@mui/icons-material/Code';
@@ -34,28 +34,75 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   justifyContent: 'flex-end',
 }));
 
-const CodeBlock = ({ content, onChange }) => (
-  <TextField
-    fullWidth
-    multiline
-    variant="outlined"
-    value={content}
-    onChange={(e) => onChange(e.target.value)}
-    InputProps={{
-      style: {
-        fontFamily: 'monospace',
-        whiteSpace: 'pre-wrap',
-      },
-    }}
-    sx={{ mb: 1 }}
-  />
+const highlightSyntax = (code, language) => {
+  let highlighted = code;
+  const patterns = {
+    html: {
+      tag: /(&lt;\/?[\w\s="/.'-]+&gt;)/g,
+      attribute: /\s(\w+)=/g,
+      string: /(".+?")/g,
+    },
+    css: {
+      selector: /([\w-]+\s*{)/g,
+      property: /(\w+\s*:)/g,
+      value: /:\s*([^;]+);/g,
+    },
+    javascript: {
+      keyword: /\b(const|let|var|function|return|if|for|while|else)\b/g,
+      string: /(".+?")|('.+?')/g,
+      number: /\b(\d+)\b/g,
+      function: /\b(\w+)\(/g,
+      comment: /(\/\/.*$)/gm,
+    },
+  };
+
+  if (patterns[language]) {
+    Object.entries(patterns[language]).forEach(([className, regex]) => {
+      highlighted = highlighted.replace(regex, `<span class="${className}">$1</span>`);
+    });
+  }
+
+  return highlighted;
+};
+
+const CodeBlock = ({ content, language, onChange }) => (
+  <Box sx={{ mb: 1 }}>
+    <Select
+      value={language || ''}
+      onChange={(e) => onChange(content, e.target.value)}
+      sx={{ mb: 1 }}
+    >
+      <MenuItem value="">Select language</MenuItem>
+      <MenuItem value="html">HTML</MenuItem>
+      <MenuItem value="css">CSS</MenuItem>
+      <MenuItem value="javascript">JavaScript</MenuItem>
+    </Select>
+    <TextField
+      fullWidth
+      multiline
+      variant="outlined"
+      value={content}
+      onChange={(e) => onChange(e.target.value, language)}
+      InputProps={{
+        style: {
+          fontFamily: 'monospace',
+          whiteSpace: 'pre-wrap',
+        },
+      }}
+    />
+    <Box
+      className="code-block"
+      dangerouslySetInnerHTML={{ __html: highlightSyntax(content, language) }}
+      sx={{ mt: 1 }}
+    />
+  </Box>
 );
 
 const App = () => {
   const [pages, setPages] = useState([]);
   const [currentPage, setCurrentPage] = useState(null);
   const [title, setTitle] = useState('');
-  const [blocks, setBlocks] = useState([{ type_: 'text', content: '' }]);
+  const [blocks, setBlocks] = useState([{ type_: 'text', content: '', language: null }]);
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [loading, setLoading] = useState(true);
 
@@ -83,7 +130,7 @@ const App = () => {
       await fetchPages();
       setCurrentPage(newPageId);
       setTitle('New Page');
-      setBlocks([{ type_: 'text', content: '' }]);
+      setBlocks([{ type_: 'text', content: '', language: null }]);
     } catch (error) {
       console.error('Error creating page:', error);
     } finally {
@@ -120,14 +167,14 @@ const App = () => {
     }
   };
 
-  const handleBlockChange = (index, content) => {
+  const handleBlockChange = (index, content, language = null) => {
     const newBlocks = [...blocks];
-    newBlocks[index] = { ...newBlocks[index], content };
+    newBlocks[index] = { ...newBlocks[index], content, language };
     setBlocks(newBlocks);
   };
 
   const addBlock = (type_ = 'text') => {
-    setBlocks([...blocks, { type_, content: '' }]);
+    setBlocks([...blocks, { type_, content: '', language: null }]);
   };
 
   return (
@@ -180,7 +227,8 @@ const App = () => {
                   <CodeBlock
                     key={index}
                     content={block.content}
-                    onChange={(content) => handleBlockChange(index, content)}
+                    language={block.language}
+                    onChange={(content, language) => handleBlockChange(index, content, language)}
                   />
                 ) : (
                   <TextField

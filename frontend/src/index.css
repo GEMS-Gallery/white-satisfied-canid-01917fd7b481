@@ -22,3 +22,13 @@ code {
   white-space: pre-wrap;
   word-wrap: break-word;
 }
+
+.code-block .keyword { color: #0000ff; }
+.code-block .string { color: #008000; }
+.code-block .number { color: #ff8000; }
+.code-block .function { color: #800080; }
+.code-block .comment { color: #808080; font-style: italic; }
+.code-block .tag { color: #800000; }
+.code-block .attribute { color: #ff0000; }
+.code-block .selector { color: #800080; }
+.code-block .property { color: #ff0000; }

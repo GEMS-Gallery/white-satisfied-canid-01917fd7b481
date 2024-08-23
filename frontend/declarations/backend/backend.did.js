@@ -12,7 +12,11 @@ export const idlFactory = ({ IDL }) => {
               'id' : PageId,
               'title' : IDL.Text,
               'blocks' : IDL.Vec(
-                IDL.Record({ 'content' : IDL.Text, 'type' : IDL.Text })
+                IDL.Record({
+                  'content' : IDL.Text,
+                  'type' : IDL.Text,
+                  'language' : IDL.Opt(IDL.Text),
+                })
               ),
             })
           ),
@@ -27,7 +31,11 @@ export const idlFactory = ({ IDL }) => {
               'id' : PageId,
               'title' : IDL.Text,
               'blocks' : IDL.Vec(
-                IDL.Record({ 'content' : IDL.Text, 'type' : IDL.Text })
+                IDL.Record({
+                  'content' : IDL.Text,
+                  'type' : IDL.Text,
+                  'language' : IDL.Opt(IDL.Text),
+                })
               ),
             })
           ),
@@ -38,7 +46,13 @@ export const idlFactory = ({ IDL }) => {
         [
           PageId,
           IDL.Text,
-          IDL.Vec(IDL.Record({ 'content' : IDL.Text, 'type' : IDL.Text })),
+          IDL.Vec(
+            IDL.Record({
+              'content' : IDL.Text,
+              'type' : IDL.Text,
+              'language' : IDL.Opt(IDL.Text),
+            })
+          ),
         ],
         [Result],
         [],
