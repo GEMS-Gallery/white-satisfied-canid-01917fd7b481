@@ -1,0 +1,34 @@
+type Result = 
+ variant {
+   err: text;
+   ok;
+ };
+type PageId = nat;
+service : {
+  createPage: (text) -> (PageId);
+  deletePage: (PageId) -> (Result);
+  getPage: (PageId) ->
+   (opt
+     record {
+       blocks: vec record {
+                     content: text;
+                     "type": text;
+                   };
+       id: PageId;
+       title: text;
+     }) query;
+  getPages: () ->
+   (vec
+     record {
+       blocks: vec record {
+                     content: text;
+                     "type": text;
+                   };
+       id: PageId;
+       title: text;
+     }) query;
+  updatePage: (PageId, text, vec record {
+                                   content: text;
+                                   "type": text;
+                                 }) -> (Result);
+}
